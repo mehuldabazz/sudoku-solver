@@ -20,16 +20,23 @@ pygame.init()
 # Set up display
 width, height = 540, 600
 win = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Sudoku")
+pygame.display.set_caption("Cyberpunk Sudoku")
 
 # Load font
-font = pygame.font.SysFont("comicsans", 40)
-small_font = pygame.font.SysFont("comicsans", 20)
-winner_font = pygame.font.SysFont("comicsans", 60)
+font = pygame.font.SysFont("orbitron", 40)
+small_font = pygame.font.SysFont("orbitron", 20)
+winner_font = pygame.font.SysFont("orbitron", 60)
+
+# Colors
+bg_color = (20, 20, 20)
+line_color = (50, 205, 50)
+num_color = (0, 255, 255)
+selected_color = (255, 20, 147)
+winner_color = (255, 255, 0)
 
 # Draw the grid
 def draw_grid(win, board):
-    win.fill((255, 255, 255))
+    win.fill(bg_color)
     gap = width // 9
 
     for i in range(10):
@@ -37,19 +44,19 @@ def draw_grid(win, board):
             thick = 4
         else:
             thick = 1
-        pygame.draw.line(win, (0, 0, 0), (0, i * gap), (width, i * gap), thick)
-        pygame.draw.line(win, (0, 0, 0), (i * gap, 0), (i * gap, width), thick)
+        pygame.draw.line(win, line_color, (0, i * gap), (width, i * gap), thick)
+        pygame.draw.line(win, line_color, (i * gap, 0), (i * gap, width), thick)
 
     for i in range(len(board)):
         for j in range(len(board[i])):
             if board[i][j] != 0:
-                text = font.render(str(board[i][j]), 1, (0, 0, 0))
+                text = font.render(str(board[i][j]), 1, num_color)
                 win.blit(text, (j * gap + 15, i * gap + 15))
 
 # Highlight the selected box
 def draw_selected(win, row, col):
     gap = width // 9
-    pygame.draw.rect(win, (255, 0, 0), (col * gap, row * gap, gap, gap), 3)
+    pygame.draw.rect(win, selected_color, (col * gap, row * gap, gap, gap), 3)
 
 # Find the empty cell
 def find_empty(bo):
@@ -107,7 +114,7 @@ def solve(bo):
 
 # Display the winner message
 def draw_winner(win):
-    text = winner_font.render("You Won!", 1, (0, 255, 0))
+    text = winner_font.render("You Won!", 1, winner_color)
     win.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
     pygame.display.update()
     pygame.time.delay(2000)
@@ -116,7 +123,7 @@ def draw_winner(win):
 def main():
     key = None
     run = True
-    selected = None
+    selected = (0, 0)
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -156,6 +163,14 @@ def main():
                         if valid(board, key, selected):
                             board[selected[0]][selected[1]] = key
                             key = None
+                if event.key == pygame.K_UP:
+                    selected = (max(selected[0] - 1, 0), selected[1])
+                if event.key == pygame.K_DOWN:
+                    selected = (min(selected[0] + 1, 8), selected[1])
+                if event.key == pygame.K_LEFT:
+                    selected = (selected[0], max(selected[1] - 1, 0))
+                if event.key == pygame.K_RIGHT:
+                    selected = (selected[0], min(selected[1] + 1, 8))
 
         if selected and key is not None:
             board[selected[0]][selected[1]] = key
@@ -170,5 +185,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
