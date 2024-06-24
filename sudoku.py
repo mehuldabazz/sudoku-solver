@@ -25,6 +25,7 @@ pygame.display.set_caption("Sudoku")
 # Load font
 font = pygame.font.SysFont("comicsans", 40)
 small_font = pygame.font.SysFont("comicsans", 20)
+winner_font = pygame.font.SysFont("comicsans", 60)
 
 # Draw the grid
 def draw_grid(win, board):
@@ -104,6 +105,13 @@ def solve(bo):
 
     return False
 
+# Display the winner message
+def draw_winner(win):
+    text = winner_font.render("You Won!", 1, (0, 255, 0))
+    win.blit(text, (width // 2 - text.get_width() // 2, height // 2 - text.get_height() // 2))
+    pygame.display.update()
+    pygame.time.delay(2000)
+
 # Main loop
 def main():
     key = None
@@ -113,15 +121,54 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                row, col = pos[1] // (width // 9), pos[0] // (width // 9)
+                selected = (row, col)
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    key = 1
+                if event.key == pygame.K_2:
+                    key = 2
+                if event.key == pygame.K_3:
+                    key = 3
+                if event.key == pygame.K_4:
+                    key = 4
+                if event.key == pygame.K_5:
+                    key = 5
+                if event.key == pygame.K_6:
+                    key = 6
+                if event.key == pygame.K_7:
+                    key = 7
+                if event.key == pygame.K_8:
+                    key = 8
+                if event.key == pygame.K_9:
+                    key = 9
                 if event.key == pygame.K_SPACE:
-                    solve(board)
+                    if solve(board):
+                        draw_winner(win)
+                if event.key == pygame.K_DELETE:
+                    if selected:
+                        board[selected[0]][selected[1]] = 0
+                        key = None
+                if event.key == pygame.K_RETURN:
+                    if selected and key is not None:
+                        if valid(board, key, selected):
+                            board[selected[0]][selected[1]] = key
+                            key = None
+
+        if selected and key is not None:
+            board[selected[0]][selected[1]] = key
+            key = None
 
         draw_grid(win, board)
+        if selected:
+            draw_selected(win, selected[0], selected[1])
         pygame.display.update()
 
     pygame.quit()
 
 if __name__ == "__main__":
     main()
+
 
