@@ -1,47 +1,73 @@
+import pygame
+import time
+
+# Define the initial Sudoku board
 board = [
-    [7,8,0,4,0,0,1,2,0],
-    [6,0,0,0,7,5,0,0,9],
-    [0,0,0,6,0,1,0,7,8],
-    [0,0,7,0,4,0,2,6,0],
-    [0,0,1,0,5,0,9,3,0],
-    [9,0,4,0,6,0,0,0,5],
-    [0,7,0,3,0,0,0,1,2],
-    [1,2,0,0,0,7,4,0,0],
-    [0,4,9,2,0,6,0,0,7]
+    [7, 8, 0, 4, 0, 0, 1, 2, 0],
+    [6, 0, 0, 0, 7, 5, 0, 0, 9],
+    [0, 0, 0, 6, 0, 1, 0, 7, 8],
+    [0, 0, 7, 0, 4, 0, 2, 6, 0],
+    [0, 0, 1, 0, 5, 0, 9, 3, 0],
+    [9, 0, 4, 0, 6, 0, 0, 0, 5],
+    [0, 7, 0, 3, 0, 0, 0, 1, 2],
+    [1, 2, 0, 0, 0, 7, 4, 0, 0],
+    [0, 4, 9, 2, 0, 6, 0, 0, 7]
 ]
 
+# Initialize Pygame
+pygame.init()
 
-def solve(bo):
-    find = find_empty(bo)
-    if not find:
-        return True
-    else:
-        row, col = find
+# Set up display
+width, height = 540, 600
+win = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Sudoku")
 
-    for i in range(1,10):
-        if valid(bo, i, (row, col)):
-            bo[row][col] = i
+# Load font
+font = pygame.font.SysFont("comicsans", 40)
+small_font = pygame.font.SysFont("comicsans", 20)
 
-            if solve(bo):
-                return True
+# Draw the grid
+def draw_grid(win, board):
+    win.fill((255, 255, 255))
+    gap = width // 9
 
-            bo[row][col] = 0
+    for i in range(10):
+        if i % 3 == 0:
+            thick = 4
+        else:
+            thick = 1
+        pygame.draw.line(win, (0, 0, 0), (0, i * gap), (width, i * gap), thick)
+        pygame.draw.line(win, (0, 0, 0), (i * gap, 0), (i * gap, width), thick)
 
-    return False
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] != 0:
+                text = font.render(str(board[i][j]), 1, (0, 0, 0))
+                win.blit(text, (j * gap + 15, i * gap + 15))
 
+# Highlight the selected box
+def draw_selected(win, row, col):
+    gap = width // 9
+    pygame.draw.rect(win, (255, 0, 0), (col * gap, row * gap, gap, gap), 3)
 
+# Find the empty cell
+def find_empty(bo):
+    for i in range(len(bo)):
+        for j in range(len(bo[0])):
+            if bo[i][j] == 0:
+                return (i, j)  # row, col
+    return None
+
+# Check if the board is valid
 def valid(bo, num, pos):
-    # Check row
     for i in range(len(bo[0])):
         if bo[pos[0]][i] == num and pos[1] != i:
             return False
 
-    # Check column
     for i in range(len(bo)):
         if bo[i][pos[1]] == num and pos[0] != i:
             return False
 
-    # Check box
     box_x = pos[1] // 3
     box_y = pos[0] // 3
 
@@ -52,31 +78,50 @@ def valid(bo, num, pos):
 
     return True
 
+# Solve the Sudoku board
+def solve(bo):
+    find = find_empty(bo)
+    if not find:
+        return True
+    else:
+        row, col = find
 
-def print_board(bo):
-    for i in range(len(bo)):
-        if i % 3 == 0 and i != 0:
-            print("- - - - - - - - - - - - - ")
+    for i in range(1,10):
+        if valid(bo, i, (row, col)):
+            bo[row][col] = i
+            draw_grid(win, bo)
+            pygame.display.update()
+            pygame.time.delay(100)
 
-        for j in range(len(bo[0])):
-            if j % 3 == 0 and j != 0:
-                print(" | ", end="")
+            if solve(bo):
+                return True
 
-            if j == 8:
-                print(bo[i][j])
-            else:
-                print(str(bo[i][j]) + " ", end="")
+            bo[row][col] = 0
 
+            draw_grid(win, bo)
+            pygame.display.update()
+            pygame.time.delay(100)
 
-def find_empty(bo):
-    for i in range(len(bo)):
-        for j in range(len(bo[0])):
-            if bo[i][j] == 0:
-                return (i, j)  # row, col
+    return False
 
-    return None
+# Main loop
+def main():
+    key = None
+    run = True
+    selected = None
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    solve(board)
 
-print_board(board)
-solve(board)
-print("___________________")
-print_board(board)
+        draw_grid(win, board)
+        pygame.display.update()
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
+
